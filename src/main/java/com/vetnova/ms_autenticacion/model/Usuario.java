@@ -10,6 +10,9 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; 
+    @NotBlank(message = "El nombre de usuario es obligatorio")
+    @Column(unique = true) 
+    private String username;
 
     @NotBlank(message = "El nombre no puede estar vacío ni contener solo espacios")
     private String nombre;
