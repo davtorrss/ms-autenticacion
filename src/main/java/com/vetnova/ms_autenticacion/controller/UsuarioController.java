@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth") 
 public class UsuarioController {
 
     @Autowired
@@ -26,7 +26,6 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UsuarioRequestDTO dto) {
-        // Al hacer login, el service valida y retorna el token JWT directamente
         String token = usuarioService.login(dto.getUsername(), dto.getPassword());
         return ResponseEntity.ok(token);
     }
