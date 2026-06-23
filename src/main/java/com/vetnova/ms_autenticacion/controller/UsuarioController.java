@@ -1,5 +1,6 @@
 package com.vetnova.ms_autenticacion.controller;
 
+import com.vetnova.ms_autenticacion.dto.LoginRequestDTO;
 import com.vetnova.ms_autenticacion.dto.UsuarioRequestDTO;
 import com.vetnova.ms_autenticacion.dto.UsuarioResponseDTO;
 import com.vetnova.ms_autenticacion.service.UsuarioService;
@@ -24,8 +25,9 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente");
     }
 
+   
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UsuarioRequestDTO dto) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO dto) {
         String token = usuarioService.login(dto.getUsername(), dto.getPassword());
         return ResponseEntity.ok(token);
     }
@@ -35,13 +37,11 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
-    //Buscar por ID
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
-    //Actualizar
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO dto) {
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto));
