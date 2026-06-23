@@ -22,7 +22,7 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtUtil jwtUtil; // Inyectamos nuestra fábrica de tokens
+    private JwtUtil jwtUtil;
 
     public UsuarioResponseDTO registrarUsuario(UsuarioRequestDTO dto) {
         if (usuarioRepository.existsByUsername(dto.getUsername())) {
@@ -31,29 +31,61 @@ public class UsuarioService {
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
-
         Usuario usuario = new Usuario();
         usuario.setUsername(dto.getUsername());
         usuario.setNombre(dto.getNombre());
         usuario.setEmail(dto.getEmail());
         usuario.setRol(dto.getRol());
         usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
-
         return convertirAResponse(usuarioRepository.save(usuario));
     }
 
-    // AHORA DEVUELVE UN STRING (EL TOKEN) EN LUGAR DE UN BOOLEAN
     public String login(String username, String rawPassword) {
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Compara la contraseña encriptada
+        
         if (passwordEncoder.matches(rawPassword, usuario.getPassword())) {
-            // Si todo está bien, genera y devuelve el Token VIP
             return jwtUtil.generateToken(usuario.getUsername(), usuario.getRol());
         } else {
             throw new RuntimeException("Credenciales incorrectas");
         }
+    }
+
+    public List<UsuarioResponseDTO> listarUsuarios() {
+        return usuarioRepository.findAll().stream().map(this::convertirAResponse).collect(Collectors.toList());
+    }
+
+    // NUEVO MÉTODO: Buscar por ID
+    public UsuarioResponseDTO buscarPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return convertirAResponse(usuario);
+    }
+
+    // NUEVO MÉTODO: Actualizar Usuario
+    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!usuario.getUsername().equals(dto.getUsername()) && usuarioRepository.existsByUsername(dto.getUsername())) {
+            throw new RuntimeException("El nuevo nombre de usuario ya está en uso");
+        }
+        
+        if (!usuario.getEmail().equals(dto.getEmail()) && usuarioRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("El nuevo email ya está registrado");
+        }
+
+        usuario.setUsername(dto.getUsername());
+        usuario.setNombre(dto.getNombre());
+        usuario.setEmail(dto.getEmail());
+        usuario.setRol(dto.getRol());
+        
+        // Solo actualiza la contraseña si viene en el DTO
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        return convertirAResponse(usuarioRepository.save(usuario));
     }
 
     public void eliminarUsuario(Long id) {
@@ -61,10 +93,6 @@ public class UsuarioService {
             throw new RuntimeException("Usuario no encontrado, no se puede eliminar");
         }
         usuarioRepository.deleteById(id);
-    }
-
-    public List<UsuarioResponseDTO> listarUsuarios() {
-        return usuarioRepository.findAll().stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
     private UsuarioResponseDTO convertirAResponse(Usuario u) {

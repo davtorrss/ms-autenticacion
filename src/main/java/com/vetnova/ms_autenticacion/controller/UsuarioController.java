@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/auth") 
+@RequestMapping("/api/auth")
 public class UsuarioController {
 
     @Autowired
@@ -33,6 +33,18 @@ public class UsuarioController {
     @GetMapping("/lista")
     public ResponseEntity<List<UsuarioResponseDTO>> listar() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
+    }
+
+    //Buscar por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
+    }
+
+    //Actualizar
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO dto) {
+        return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto));
     }
 
     @DeleteMapping("/eliminar/{id}")
